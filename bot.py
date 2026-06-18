@@ -65,7 +65,7 @@ class Config:
     """配置类 - 所有配置项集中管理"""
 
     # ---------- Telegram Bot 配置 ----------
-    BOT_TOKEN: str = "8826676249:AAFwagpWOmP8h3olOuBHoT5Ok"
+    BOT_TOKEN: str = "8826676249:AAFwagmUOm_vqnDXpWOmP8h3olOuBHoT5Ok"
     API_ID: int = 33059943
     API_HASH: str = "1c73a0510ba0b8cb3bd16f24acfd62bf"
 
@@ -2979,4 +2979,4 @@ def main():
 if __name__ == '__main__':
     # 定义对话状态（在main之前定义，供其他函数使用）
     PHONE_INPUT, VERIFICATION_CODE, TWO_FACTOR_PASSWORD = range(3)
-    main()1111111
+    main()
