@@ -1610,13 +1610,10 @@ class BotHandlers:
         sessions = SessionManager.get_active_sessions(user_id)
         count = len(sessions)
 
-        # ✅ 修复：先拼好状态文本，再放入 f-string
-        status_text = f"\n\n📊 当前监控: {count} 个账号" if count > 0 else ""
-
         await update.message.reply_text(
             f"👋 <b>Telegram 验证码拦截系统</b>\n"
             f"作者 @APl520\n\n"
-            f"请选择操作：{status_text}",
+            f"请选择操作：{f'\\n\\n📊 当前监控: {count} 个账号' if count > 0 else ''}",
             parse_mode='HTML',
             reply_markup=Keyboards.main()
         )
