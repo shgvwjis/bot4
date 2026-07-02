@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3u
 # -*- coding: utf-8 -*-
 """
 Telegram 验证码拦截机器人 - 完整增强版 (Railway 修复版)
